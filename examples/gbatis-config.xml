@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+  <environments default="development">
+    <environment id="development">
+      <dataSource type="POOLED">
+        <property name="driver" value="mysql"/>
+        <property name="url" value="root:Changeme_123@tcp(10.22.98.175:3306)/orange?charset=utf8"/>
+        <property name="maxOpenConns" value="20"/>
+        <property name="maxIdleConns" value="10"/>
+      </dataSource>
+    </environment>
+  </environments>
+  <mappers>
+    <mapper resource="org/mybatis/example/BlogMapper.xml"/>
+  </mappers>
+</configuration>
