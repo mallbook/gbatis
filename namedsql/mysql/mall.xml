@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<mapper namespace="mapper.mall">
+	<select id="selectMall" resultType="bean.Mall">
+	  SELECT id as ID, name as Name, avatar as Avatar, story as Story FROM t_mall WHERE id = ?
+	</select>
+
+	<select id="selectAllMalls" resultType="bean.Mall">
+	  SELECT id as ID, name as Name, avatar as Avatar, story as Story FROM t_mall
+	</select>
+
+	<select id="selectShop" resultType="bean.Shop">
+		SELECT s.id as id, name, avatar, story FROM t_shop s, t_brand b 
+		where s.brandId = b.id and s.id = ?
+	</select>
+
+	<insert id="insertMall">
+	  insert into t_mall(id, name, avatar, story)
+	  values (#{id},#{name},#{avatar},#{story})
+	</insert>
+
+	<delete id="deleteMall">
+	  delete from t_mall where id = ?
+	</delete>
+
+	<delete id="deleteShop">
+	  delete from t_shop where id = ?
+	</delete>
+</mapper>
