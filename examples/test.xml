@@ -22,3 +22,4 @@
 	  delete from Author where id = #{id}
 	</delete>
 </mapper>
+
