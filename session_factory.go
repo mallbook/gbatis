@@ -1,25 +1,28 @@
 package gbatis
 
 import (
-	"sync"
+	"database/sql"
 )
 
-// OpenSession means Open a SQL Session
-func OpenSession() *SQLSession {
-	return nil
+type sqlSessionFactory struct {
+	connPools map[string]*sql.DB
 }
 
-type SQLSessionFactory struct{}
+var sessionFactory = &sqlSessionFactory{
+	connPools: make(map[string]*sql.DB),
+}
 
+/*
 var (
 	sessionFactory *SQLSessionFactory
 	once           sync.Once
 )
 
-// SessionFactory means SQLSession Factory
-func SessionFactory() *SQLSessionFactory {
+// Instance means SQLSession Factory
+func Instance() *SQLSessionFactory {
 	once.Do(func() {
 		sessionFactory = &SQLSessionFactory{}
 	})
 	return sessionFactory
 }
+*/
