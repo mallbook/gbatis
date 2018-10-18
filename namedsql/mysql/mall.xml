@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <mapper namespace="mapper.mall">
 	<select id="selectMall" resultType="bean.Mall">
-	  SELECT id as ID, name as Name, avatar as Avatar, story as Story FROM t_mall WHERE id = ?
+	  SELECT id as ID, name as Name, avatar as Avatar, createdAt as CreatedAt, 
+			updatedAt as UpdatedAt, story as Story FROM t_mall WHERE id = ?
 	</select>
 
 	<select id="selectAllMalls" resultType="bean.Mall">
@@ -14,9 +15,13 @@
 	</select>
 
 	<insert id="insertMall">
-	  insert into t_mall(id, name, avatar, story)
-	  values (#{id},#{name},#{avatar},#{story})
+	  insert into t_mall(id, name, avatar, createdAt, updatedAt, story) 
+			values (?, ?, ?, unix_timestamp(now()), unix_timestamp(now()), ?)
 	</insert>
+
+	<update id="updateMall">
+		update t_mall set name = ?, updatedAt = unix_timestamp(now()) where id = ?
+	</update>
 
 	<delete id="deleteMall">
 	  delete from t_mall where id = ?
@@ -26,3 +31,4 @@
 	  delete from t_shop where id = ?
 	</delete>
 </mapper>
+
