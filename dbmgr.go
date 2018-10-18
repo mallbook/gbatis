@@ -48,7 +48,8 @@ func (d *dbMgr) getDefaultID() (defaultID string) {
 	return d.defaultID
 }
 
-func createDB(confFile string) (err error) {
+// OpenDB open database
+func OpenDB(confFile string) (err error) {
 	conf, err := loadConfig(confFile)
 	if err != nil {
 		return fmt.Errorf("Load config fail, confFile = %s", confFile)
@@ -91,8 +92,4 @@ func createDB(confFile string) (err error) {
 	}
 
 	return nil
-}
-
-func init() {
-	createDB("examples/gbatis.xml")
 }
