@@ -53,8 +53,6 @@ func (s SQLSession) Select(sqlID string, args ...interface{}) ([]interface{}, er
 		return nil, fmt.Errorf("NewBean fail, err=%s, resultType=%s, sqlID=%s", err, si.resultType, sqlID)
 	}
 
-	// fmt.Printf("numField = %d\n", result.Elem().NumField())
-
 	rows, err := s.db.Query(si.sql, args...)
 	if err != nil {
 		return nil, err
@@ -69,7 +67,6 @@ func (s SQLSession) Select(sqlID string, args ...interface{}) ([]interface{}, er
 	len := len(columns)
 	dest := make([]interface{}, len)
 	for i := 0; i < len; i++ {
-		// log.Println("field=", columns[i])
 		field := result.Elem().FieldByName(columns[i])
 		dest[i] = field.Addr().Interface()
 	}
@@ -108,8 +105,50 @@ func (s SQLSession) Execute(sqlID string, args ...interface{}) (sql.Result, erro
 }
 
 // BulkInsert means bulk insert data
-func (s SQLSession) BulkInsert(sqlID string, parameter []interface{}) error {
-	return nil
+// sql syntax: insert into t(a1, a2, a3) values (?, ?, ?),(?, ?, ?)...
+func (s SQLSession) BulkInsert(sqlID string, rows []interface{}) (sql.Result, error) {
+	if s.db == nil {
+		return nil, fmt.Errorf("The sql.DB object is nil, sqlID=%s", sqlID)
+	}
+
+	if rows == nil || len(rows) == 0 {
+		return nil, fmt.Errorf("%s", "The rows is nil or len is zero.")
+	}
+
+	si, err := getSQLMgrInstance().getSQL(sqlID)
+	if err != nil {
+		return nil, err
+	}
+
+	if si.class != insertClass {
+		return nil, fmt.Errorf("Sql class is not insertClass, but %d, sqlID=%s", si.class, sqlID)
+	}
+
+	ss, err := cutInsertSQL(si.sql)
+	if err != nil {
+		return nil, err
+	}
+
+	sqlStr := ss[0]
+	args := make([]interface{}, 0)
+	for _, row := range rows {
+		sqlStr += ss[1] + ","
+		vals, ok := row.([]interface{})
+		if ok {
+			args = append(args, vals...)
+		}
+	}
+
+	// trim the last ,
+	sqlStr = sqlStr[0 : len(sqlStr)-1]
+
+	stmt, err := s.db.Prepare(sqlStr)
+	if err != nil {
+		return nil, fmt.Errorf("Prepare sql fail, err=%v, sql=%s", err, sqlStr)
+	}
+	defer stmt.Close()
+
+	return stmt.Exec(args...)
 }
 
 // Close free a database connection
