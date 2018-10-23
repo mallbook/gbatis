@@ -27,15 +27,15 @@ Hello gbatis
 ```go
 err := gbatis.OpenDB("etc/conf/gbatis.xml")
 if err != nil {
-    fmt.Println(err)
-    return
+	fmt.Println(err)
+	return
 }
 fmt.Println("Open database success.")
 ```
 
 ## Named sql
 
-```
+```xml
 <?xml version="1.0" encoding="UTF-8" ?>
 <mapper namespace="mapper.mall">
 	<select id="selectMall" resultType="bean.Mall">
@@ -75,10 +75,9 @@ fmt.Println("Open database success.")
 
 ```go
 import (
-    "fmt"
+	"fmt"
 	"testing"
-    
-    _ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/mallbook/gbatis"
 	_ "github.com/mallbook/gbatis/bean"
 )
