@@ -131,7 +131,7 @@ func TestSelectRow_2(t *testing.T) {
 ```
 
 ## TODO
-- [] Add init() in config.go
-- [] Support sql template
-- [] Support bind parameter
-- [] Add unit test
+- [ ] Add init() in config.go
+- [ ] Support sql template
+- [ ] Support bind parameter
+- [ ] Add unit test
