@@ -2,7 +2,8 @@ package gbatis
 
 import (
 	"testing"
-	// _ "github.com/go-sql-driver/mysql"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func TestCreateDB(t *testing.T) {
@@ -14,4 +15,3 @@ func TestCreateDB(t *testing.T) {
 	dbmgr := getDBMgrInstance()
 	t.Log(dbmgr)*/
 }
-
