@@ -7,27 +7,26 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/mallbook/commandline"
 )
 
 type sqlClass int8
 
 const (
-	selectClass    sqlClass = 0
-	insertClass    sqlClass = 1
-	updateClass    sqlClass = 2
-	deleteClass    sqlClass = 3
-	procStoreClass sqlClass = 4
+	selectClass sqlClass = iota
+	insertClass
+	updateClass
+	deleteClass
+	procStoreClass
+	anyClass
 )
 
-// NamedSQLInfo means NamedSQL infomation
 type sqlInfor struct {
 	class      sqlClass
 	sql        string
 	resultType string
 }
-
-// namedSQL include all namedSQL
-// var namedSQL = make(map[string]sqlInfor)
 
 var (
 	_sqlMgrInst *sqlMgr
@@ -72,6 +71,7 @@ func (s *sqlMgr) appendSQL(m *mapper) {
 		}
 		s.sqls[m.Namespace+"."+item.ID] = infor
 	}
+
 	for _, item := range m.Delete {
 		infor := sqlInfor{
 			class: deleteClass,
@@ -79,6 +79,7 @@ func (s *sqlMgr) appendSQL(m *mapper) {
 		}
 		s.sqls[m.Namespace+"."+item.ID] = infor
 	}
+
 	for _, item := range m.Update {
 		infor := sqlInfor{
 			class: updateClass,
@@ -86,11 +87,20 @@ func (s *sqlMgr) appendSQL(m *mapper) {
 		}
 		s.sqls[m.Namespace+"."+item.ID] = infor
 	}
+
 	for _, item := range m.Select {
 		infor := sqlInfor{
 			class:      selectClass,
 			resultType: item.ResultType,
 			sql:        formatSQL(item.SQL),
+		}
+		s.sqls[m.Namespace+"."+item.ID] = infor
+	}
+
+	for _, item := range m.Anysql {
+		infor := sqlInfor{
+			class: anyClass,
+			sql:   formatSQL(item.SQL),
 		}
 		s.sqls[m.Namespace+"."+item.ID] = infor
 	}
@@ -198,5 +208,6 @@ func loadNamedSQL(namedPath string) error {
 }
 
 func init() {
-	loadNamedSQL("namedsql")
+	p := commandline.PrefixPath()
+	loadNamedSQL(p + "/namedsql")
 }
