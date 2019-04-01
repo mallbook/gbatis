@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<mapper namespace="mapper.mall">
+<mapper namespace="/mapper/mall">
 	<select id="selectMall" resultType="bean.Mall">
 	  SELECT id as ID, name as Name, avatar as Avatar, createdAt as CreatedAt, 
 			updatedAt as UpdatedAt, story as Story FROM t_mall WHERE id = ?
@@ -7,6 +7,10 @@
 
 	<select id="selectAllMalls" resultType="bean.Mall">
 	  SELECT id as ID, name as Name, avatar as Avatar, story as Story FROM t_mall
+	</select>
+
+	<select id="selectAllMalls2" resultType="bean.Mall">
+	  SELECT id as ID, name as Name, avatar as Avatar, story as Story FROM ${.tableName}
 	</select>
 
 	<select id="selectShop" resultType="bean.Shop">
@@ -23,6 +27,10 @@
 		update t_mall set name = ?, updatedAt = unix_timestamp(now()) where id = ?
 	</update>
 
+	<update id="updateMall2">
+		update ${.tableName} set name = ?, updatedAt = unix_timestamp(now()) where id = ?
+	</update>
+
 	<delete id="deleteMall">
 	  delete from t_mall where id = ?
 	</delete>
@@ -30,5 +38,20 @@
 	<delete id="deleteShop">
 	  delete from t_shop where id = ?
 	</delete>
+
+	<anysql id="createMallTable">
+		CREATE TABLE IF NOT EXISTS t_mall (
+			id varchar(64),
+			name varchar(32),
+			avatar varchar(256),
+			createdAt int,
+			updatedAt int,
+			story varchar(1024),
+			PRIMARY KEY(id)
+		)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+	</anysql>
+	<anysql id="dropMallTable">
+		DROP TABLE IF EXISTS t_mall
+	</anysql>
 </mapper>
 
