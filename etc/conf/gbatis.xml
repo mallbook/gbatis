@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+<dbs default="dev">
+    <db id="dev">
+        <property name="driver" value="mysql"/>
+        <property name="dataSource" value="root:Changeme_123@tcp(10.22.98.175:3306)/orange?charset=utf8"/>
+        <property name="maxOpenConns" value = "20"/>
+        <property name="maxIdleConns" value = "10"/>
+    </db>
+    <db id="product">
+        <property name="driver" value="mysql"/>
+        <property name="dataSource" value="root:Changeme_123@tcp(10.22.98.175:3306)/orange?charset=utf8"/>
+        <property name="maxOpenConns" value = "20"/>
+        <property name="maxIdleConns" value = "10"/>
+    </db>
+</dbs>    
+</configuration>
