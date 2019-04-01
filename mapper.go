@@ -14,6 +14,7 @@ type mapper struct {
 	Delete    []deleter  `xml:"delete"`
 	Insert    []inserter `xml:"insert"`
 	Update    []updater  `xml:"update"`
+	Anysql    []anysql   `xml:"anysql"`
 }
 
 type selecter struct {
@@ -33,6 +34,11 @@ type inserter struct {
 }
 
 type updater struct {
+	ID  string `xml:"id,attr"`
+	SQL string `xml:",innerxml"`
+}
+
+type anysql struct {
 	ID  string `xml:"id,attr"`
 	SQL string `xml:",innerxml"`
 }
