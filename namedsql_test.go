@@ -1,35 +1,24 @@
 package gbatis
 
 import (
-	"fmt"
 	"testing"
+
+	. "gopkg.in/check.v1"
 )
 
-func TestWalk(t *testing.T) {
-	namedFiles, err := walk("namedsql/mysql")
-	if err != nil {
-		t.Fail()
-	} else {
-		t.Log(namedFiles)
-		t.Log("OK")
-	}
-}
+func TestNamedSQL(t *testing.T) { TestingT(t) }
 
-func TestLoadNamedSQL(t *testing.T) {
-	err := loadNamedSQL("namedsql")
-	if err != nil {
-		t.Fail()
-		return
-	}
+type namedSQLSuite struct{}
 
-	s := getSQLMgrInstance()
-	s.display()
+var _ = Suite(&namedSQLSuite{})
 
-	si, err := s.getSQL("mapper.AuthorMapper.updateAuthor")
-	if err != nil {
-		t.Fail()
-		return
-	}
+func (s namedSQLSuite) TestNamedSql(c *C) {
+	sm := getSQLMgrInstance()
+	si, err := sm.getSQL("/mapper/mall.selectMall")
+	c.Assert(err, IsNil)
+	c.Assert(si, NotNil)
+	c.Check(si.class, Equals, selectClass)
 
-	fmt.Printf("[%s]", formatSQL(si.sql))
+	_, err = sm.getSQL("/mapper/mall.selectMall2")
+	c.Assert(err, ErrorMatches, "Not found sql named /mapper/mall.selectMall2")
 }
