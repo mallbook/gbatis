@@ -12,7 +12,18 @@ func SelectRow(sqlID string, args ...interface{}) (*sql.Row, error) {
 	}
 	defer s.Close()
 
-	return s.SelectRow(sqlID, args)
+	return s.SelectRow(sqlID, args...)
+}
+
+// SelectOne delegate SQLSession.SelectOne
+func SelectOne(sqlID string, args ...interface{}) (interface{}, error) {
+	s, err := OpenSession()
+	if err != nil {
+		return nil, err
+	}
+	defer s.Close()
+
+	return s.SelectOne(sqlID, args...)
 }
 
 // Select delegate SQLSession.Select
