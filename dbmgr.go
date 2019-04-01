@@ -3,8 +3,10 @@ package gbatis
 import (
 	"database/sql"
 	"fmt"
-	"sync"
 	"log"
+	"sync"
+
+	"github.com/mallbook/commandline"
 )
 
 var (
@@ -48,8 +50,8 @@ func (d *dbMgr) getDefaultID() (defaultID string) {
 	return d.defaultID
 }
 
-// OpenDB open database
-func OpenDB(confFile string) (err error) {
+// openDB open database
+func openDB(confFile string) (err error) {
 	conf, err := loadConfig(confFile)
 	if err != nil {
 		return fmt.Errorf("Load config fail, confFile = %s", confFile)
@@ -80,6 +82,8 @@ func OpenDB(confFile string) (err error) {
 			continue
 		}
 
+		log.Printf("Open database success, dbID=%s", dbParams.ID)
+
 		err = db.Ping()
 		if err != nil {
 			log.Printf("Ping database fail, err=%v, driver=%s, dbID=%s", err, di.Driver, dbParams.ID)
@@ -91,5 +95,15 @@ func OpenDB(confFile string) (err error) {
 		dbmgr.setDB(dbParams.ID, db)
 	}
 
-	return nil
+	return
+}
+
+func init() {
+	p := commandline.PrefixPath()
+	err := openDB(p + "/etc/conf/gbatis.xml")
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	// log.Println("Open database success.")
 }
