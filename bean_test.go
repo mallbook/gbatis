@@ -1,9 +1,9 @@
 package gbatis
 
 import (
-	"log"
 	"testing"
-	//"github.com/mallbook/gbatis/bean"
+
+	. "gopkg.in/check.v1"
 )
 
 type student struct {
@@ -16,18 +16,20 @@ func newStudent() *student {
 	return &student{}
 }
 
-// func init() {
-// 	RegisterBean("student", newStudent)
-// }
+func TestBean(t *testing.T) { TestingT(t) }
 
-func TestNewBean(t *testing.T) {
+type beanSuite struct{}
+
+var _ = Suite(&beanSuite{})
+
+func (s beanSuite) TestNewBean(c *C) {
+	RegisterBean("student", newStudent)
+
 	f := getBeanFactoryInstance()
 	v, err := f.newBean("student")
-	if err != nil {
-		t.Log(err)
-		return
-	}
+	c.Assert(err, IsNil)
+	c.Check(v, NotNil)
 
-	log.Println(v.Type())
-	log.Println(v)
+	_, err = f.newBean("student2")
+	c.Assert(err, ErrorMatches, "Not found bean named student2")
 }
