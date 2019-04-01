@@ -13,7 +13,7 @@ type MapperSuite struct{}
 var _ = Suite(&MapperSuite{})
 
 func (s MapperSuite) TestParseNamedSQL(c *C) {
-	mapper, err := parseNamedSQL("examples/test.xml")
+	mapper, err := parseNamedSQL("namedsql/mysql/test.xml")
 	c.Assert(err, IsNil)
 	c.Check(mapper.Namespace, Equals, "/mapper/AuthorMapper")
 	c.Check(mapper.Select, HasLen, 1)

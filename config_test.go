@@ -5,7 +5,7 @@ import (
 )
 
 func TestLoadConfig(t *testing.T) {
-	c, err := loadConfig("examples/gbatis.xml")
+	c, err := loadConfig("etc/conf/gbatis.xml")
 	if err != nil {
 		t.Fail()
 	} else {

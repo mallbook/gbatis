@@ -16,6 +16,10 @@ func newStudent() *student {
 	return &student{}
 }
 
+func init() {
+	RegisterBean("student", newStudent)
+}
+
 func TestBean(t *testing.T) { TestingT(t) }
 
 type beanSuite struct{}
@@ -23,7 +27,6 @@ type beanSuite struct{}
 var _ = Suite(&beanSuite{})
 
 func (s beanSuite) TestNewBean(c *C) {
-	RegisterBean("student", newStudent)
 
 	f := getBeanFactoryInstance()
 	v, err := f.newBean("student")
