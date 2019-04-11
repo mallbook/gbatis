@@ -63,3 +63,70 @@ func (s sqlTemplateSuite) TestJudgeTemplate(c *C) {
 		c.Check(judgeTemplate(testCase.tmpl), Equals, testCase.result)
 	}
 }
+
+func (s sqlTemplateSuite) TestIn(c *C) {
+	values := make([]interface{}, 10)
+	for i := range values {
+		values[i] = 100
+	}
+
+	result := in(values)
+
+	c.Check(result, Equals, "?,?,?,?,?,?,?,?,?,?")
+}
+
+func (s sqlTemplateSuite) TestInTmpl(c *C) {
+	ids := make([]interface{}, 10)
+	for i := range ids {
+		ids[i] = 100
+	}
+
+	data := make(map[string]interface{})
+
+	data["ids"] = ids
+	data["tableName"] = "t_mall"
+
+	expect := `SELECT id as ID, name as Name, avatar as Avatar, story as Story FROM t_mall
+where id in(?,?,?,?,?,?,?,?,?,?)`
+
+	t := Template("/mapper/mall.selectMallsIn", data)
+	c.Assert(t.err, IsNil)
+	c.Check(t.statement, Equals, expect)
+}
+
+func (s sqlTemplateSuite) TestInTmpl2(c *C) {
+	ids := make([]interface{}, 10)
+	for i := range ids {
+		ids[i] = 100
+	}
+
+	data := make(map[string]interface{})
+
+	data["ids"] = ids
+	data["tableName"] = "t_mall"
+
+	expect := `SELECT id as ID, name as Name, avatar as Avatar, story as Story FROM t_mall
+where id in(?,?,?,?,?,?,?,?,?,?)`
+
+	t := Template("/mapper/mall.selectMallsIn2", data)
+	c.Assert(t.err, IsNil)
+	c.Check(t.statement, Equals, expect)
+}
+
+func (s sqlTemplateSuite) TestInTmpl3(c *C) {
+	ids := make([]interface{}, 10)
+	for i := range ids {
+		ids[i] = 100
+	}
+
+	data := make(map[string]interface{})
+
+	data["ids"] = ids
+	data["tableName"] = "t_mall"
+
+	expect := `SELECT id as ID, name as Name, avatar as Avatar, story as Story FROM t_mall`
+
+	t := Template("/mapper/mall.selectMallsIn3", data)
+	c.Assert(t.err, IsNil)
+	c.Check(t.statement, Equals, expect)
+}
