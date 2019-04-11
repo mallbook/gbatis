@@ -124,47 +124,6 @@ func formatSQL(sql string) string {
 	return strings.Trim(sql, "\r\n")
 }
 
-/*
-func appendNamedSQL(m *mapper) {
-
-	for _, item := range m.Insert {
-		infor := sqlInfor{
-			class: insertClass,
-			sql:   item.SQL,
-		}
-		namedSQL[m.Namespace+"."+item.ID] = infor
-	}
-	for _, item := range m.Delete {
-		infor := sqlInfor{
-			class: deleteClass,
-			sql:   item.SQL,
-		}
-		namedSQL[m.Namespace+"."+item.ID] = infor
-	}
-	for _, item := range m.Update {
-		infor := sqlInfor{
-			class: updateClass,
-			sql:   item.SQL,
-		}
-		namedSQL[m.Namespace+"."+item.ID] = infor
-	}
-	for _, item := range m.Select {
-		infor := sqlInfor{
-			class: selectClass,
-			sql:   item.SQL,
-		}
-		namedSQL[m.Namespace+"."+item.ID] = infor
-	}
-}*/
-
-/*type namedSQLMgr struct {
-	namedSQL map[string]sqlInfor
-}
-
-func (n *namedSQLMgr) (m *mapper) {
-
-}*/
-
 func walk(path string) ([]string, error) {
 	namedFiles := make([]string, 0)
 	err := filepath.Walk(path, func(path string, f os.FileInfo, err error) error {
