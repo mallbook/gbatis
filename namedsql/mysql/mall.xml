@@ -13,6 +13,25 @@
 	  SELECT id as ID, name as Name, avatar as Avatar, story as Story FROM ${.tableName}
 	</select>
 
+	<select id="selectMallsIn">
+		SELECT id as ID, name as Name, avatar as Avatar, story as Story FROM ${.tableName}
+		where id in(${in .ids})
+	</select>
+
+	<select id="selectMallsIn2">
+		SELECT id as ID, name as Name, avatar as Avatar, story as Story FROM ${.tableName}
+		${- if eq driver "mysql"}
+			where id in(${in .ids})
+		${- end}
+	</select>
+
+	<select id="selectMallsIn3">
+		SELECT id as ID, name as Name, avatar as Avatar, story as Story FROM ${.tableName}
+		${- if eq driver "oracle"}
+			where id in(${in .ids})
+		${- end}
+	</select>
+
 	<select id="selectShop" resultType="bean.Shop">
 		SELECT s.id as id, name, avatar, story FROM t_shop s, t_brand b 
 		where s.brandId = b.id and s.id = ?
@@ -50,6 +69,7 @@
 			PRIMARY KEY(id)
 		)ENGINE=InnoDB DEFAULT CHARSET=utf8;
 	</anysql>
+
 	<anysql id="dropMallTable">
 		DROP TABLE IF EXISTS t_mall
 	</anysql>
