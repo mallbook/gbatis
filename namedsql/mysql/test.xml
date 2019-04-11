@@ -4,6 +4,10 @@
 	  SELECT id, username, password, email, bio FROM Author WHERE ID = #{id}
 	</select>
 
+	<select id="selectStudent">
+		SELECT ID as Id, Name, Grade FROM Student where ID = ?
+	</select>
+	
 	<insert id="insertAuthor">
 	  insert into Author (id,username,password,email,bio)
 	  values (#{id},#{username},#{password},#{email},#{bio})
