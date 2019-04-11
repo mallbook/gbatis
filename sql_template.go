@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"regexp"
+	"strings"
 	"sync"
 	"text/template"
 )
@@ -50,7 +51,12 @@ func (m *sqlTemplateMgr) getTmpl(sqlID string) (*template.Template, *sqlInfor, e
 		return t, &si, nil
 	}
 
-	tmpl, err := template.New(sqlID).Delims(leftDelim, rightDelim).Parse(si.sql)
+	funcs := template.FuncMap{
+		"in":     in,
+		"driver": driver,
+	}
+
+	tmpl, err := template.New(sqlID).Delims(leftDelim, rightDelim).Funcs(funcs).Parse(si.sql)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -78,6 +84,7 @@ func (m *sqlTemplateMgr) set(sqlID string, tmpl *template.Template) {
 
 // SQLTemplate represents a sql template
 type SQLTemplate struct {
+	dbID      string
 	statement string
 	err       error
 	*sqlInfor
@@ -101,6 +108,7 @@ func Template(sqlID string, data interface{}) *SQLTemplate {
 	}
 
 	return &SQLTemplate{
+		dbID:      getDBMgrInstance().defaultID,
 		statement: buf.String(),
 		sqlInfor:  si,
 	}
@@ -111,7 +119,7 @@ func (t SQLTemplate) SelectRow(args ...interface{}) (*sql.Row, error) {
 	if t.err != nil {
 		return nil, t.err
 	}
-	s, err := openSession()
+	s, err := openSession(t.dbID)
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +133,7 @@ func (t SQLTemplate) SelectOne(args ...interface{}) (interface{}, error) {
 	if t.err != nil {
 		return nil, t.err
 	}
-	s, err := openSession()
+	s, err := openSession(t.dbID)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +147,7 @@ func (t SQLTemplate) Select(args ...interface{}) ([]interface{}, error) {
 	if t.err != nil {
 		return nil, t.err
 	}
-	s, err := openSession()
+	s, err := openSession(t.dbID)
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +161,7 @@ func (t SQLTemplate) Execute(args ...interface{}) (sql.Result, error) {
 	if t.err != nil {
 		return nil, t.err
 	}
-	s, err := openSession()
+	s, err := openSession(t.dbID)
 	if err != nil {
 		return nil, err
 	}
@@ -163,11 +171,11 @@ func (t SQLTemplate) Execute(args ...interface{}) (sql.Result, error) {
 }
 
 // BulkInsert delegate SQLSession.BulkInsert
-func (t SQLTemplate) bulkInsert(rows []interface{}) (sql.Result, error) {
+func (t SQLTemplate) BulkInsert(rows []interface{}) (sql.Result, error) {
 	if t.err != nil {
 		return nil, t.err
 	}
-	s, err := openSession()
+	s, err := openSession(t.dbID)
 	if err != nil {
 		return nil, err
 	}
@@ -179,4 +187,19 @@ func (t SQLTemplate) bulkInsert(rows []interface{}) (sql.Result, error) {
 // judge if the sql is a sql template
 func judgeTemplate(sqlTmpl string) bool {
 	return re.FindStringIndex(sqlTmpl) != nil
+}
+
+func in(values []interface{}) string {
+	mylen := len(values)
+	l := make([]string, mylen)
+	for i := range values {
+		l[i] = "?"
+	}
+	return strings.Join(l, ",")
+}
+
+func driver() string {
+	dbmgr := getDBMgrInstance()
+	d, _ := dbmgr.getDriver(dbmgr.defaultID)
+	return d
 }
