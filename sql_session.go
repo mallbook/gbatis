@@ -15,6 +15,14 @@ func (s sqlSession) selectRow(sql string, args ...interface{}) (*sql.Row, error)
 		return nil, fmt.Errorf("The session was closed, sqlID=%s", sql)
 	}
 
+	if containNamedArgs(sql) && len(args) > 0 {
+		var err error
+		sql, args, err = preparedNamedArgs(sql, args[0])
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return s.db.QueryRow(sql, args...), nil
 }
 
@@ -41,6 +49,14 @@ func (s sqlSession) selectList(sql, resultType string, args ...interface{}) ([]i
 	result, err := NewBean(resultType)
 	if err != nil {
 		return nil, fmt.Errorf("NewBean fail, err=%s, resultType=%s, sqlID=%s", err, resultType, sql)
+	}
+
+	if containNamedArgs(sql) && len(args) > 0 {
+		var err error
+		sql, args, err = preparedNamedArgs(sql, args[0])
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	rows, err := s.db.Query(sql, args...)
@@ -82,6 +98,14 @@ func (s sqlSession) execute(sql string, args ...interface{}) (sql.Result, error)
 		return nil, fmt.Errorf("The session was closed, sqlID=%s", sql)
 	}
 
+	if containNamedArgs(sql) && len(args) > 0 {
+		var err error
+		sql, args, err = preparedNamedArgs(sql, args[0])
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return s.db.Exec(sql, args...)
 }
 
@@ -94,6 +118,14 @@ func (s sqlSession) bulkInsert(sql string, rows []interface{}) (sql.Result, erro
 
 	if rows == nil || len(rows) == 0 {
 		return nil, fmt.Errorf("%s", "The rows is nil or len is zero.")
+	}
+
+	if containNamedArgs(sql) {
+		var err error
+		sql, rows, err = preparedBulkNamedArgs(sql, rows)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	ss, err := cutInsertSQL(sql)
