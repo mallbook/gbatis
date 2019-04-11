@@ -17,7 +17,8 @@ var (
 func getDBMgrInstance() *dbMgr {
 	_once.Do(func() {
 		_dbmgr = &dbMgr{
-			dbs: make(map[string]*sql.DB),
+			dbs:     make(map[string]*sql.DB),
+			drivers: make(map[string]string),
 		}
 	})
 	return _dbmgr
@@ -27,6 +28,7 @@ type dbMgr struct {
 	sync.RWMutex
 	defaultID string
 	dbs       map[string]*sql.DB
+	drivers   map[string]string
 }
 
 func (d *dbMgr) getDB(dbName string) (db *sql.DB, ok bool) {
@@ -36,10 +38,25 @@ func (d *dbMgr) getDB(dbName string) (db *sql.DB, ok bool) {
 	return db, ok
 }
 
+func (d *dbMgr) getDriver(dbName string) (driver string, ok bool) {
+	d.RLock()
+	defer d.RLock()
+
+	driver, ok = d.drivers[dbName]
+	return
+}
+
 func (d *dbMgr) setDB(dbName string, db *sql.DB) {
 	d.Lock()
 	defer d.Unlock()
 	d.dbs[dbName] = db
+}
+
+func (d *dbMgr) setDriver(dbName string, driver string) {
+	d.Lock()
+	defer d.Unlock()
+
+	d.drivers[dbName] = driver
 }
 
 func (d *dbMgr) setDefaultID(defaultID string) {
@@ -93,6 +110,7 @@ func openDB(confFile string) (err error) {
 		db.SetMaxIdleConns(di.MaxIdleConns)
 
 		dbmgr.setDB(dbParams.ID, db)
+		dbmgr.setDriver(dbParams.ID, di.Driver)
 	}
 
 	return
