@@ -5,31 +5,35 @@ import (
 	"fmt"
 )
 
-// SQLSession hold a sql.DB object
-type SQLSession struct {
-	*sqlSession
+type sqlSession struct {
+	db *sql.DB
 }
 
 // SelectRow return one row from database
-func (s SQLSession) SelectRow(sqlID string, args ...interface{}) (*sql.Row, error) {
+func (s sqlSession) selectRow(sql string, args ...interface{}) (*sql.Row, error) {
 	if s.db == nil {
-		return nil, fmt.Errorf("The session was closed, sqlID=%s", sqlID)
+		return nil, fmt.Errorf("The session was closed, sqlID=%s", sql)
 	}
 
-	si, err := getSQLMgrInstance().getSQL(sqlID)
+	sql, err := preparedDyncSQL(sql)
 	if err != nil {
 		return nil, err
 	}
-	if si.class != selectClass {
-		return nil, fmt.Errorf("The class of this sql is not selectClass, but %d", si.class)
+
+	if containNamedArgs(sql) && len(args) > 0 {
+		var err error
+		sql, args, err = preparedNamedArgs(sql, args[0])
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return s.selectRow(si.sql, args...)
+	return s.db.QueryRow(sql, args...), nil
 }
 
 // SelectOne return one object
-func (s SQLSession) SelectOne(sqlID string, args ...interface{}) (interface{}, error) {
-	r, err := s.Select(sqlID, args...)
+func (s sqlSession) selectOne(sql, resultType string, args ...interface{}) (interface{}, error) {
+	r, err := s.selectList(sql, resultType, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -41,83 +45,163 @@ func (s SQLSession) SelectOne(sqlID string, args ...interface{}) (interface{}, e
 }
 
 // Select return multi objects from database
-func (s SQLSession) Select(sqlID string, args ...interface{}) ([]interface{}, error) {
+func (s sqlSession) selectList(sql, resultType string, args ...interface{}) ([]interface{}, error) {
 
 	if s.db == nil {
-		return nil, fmt.Errorf("The session was closed, sqlID=%s", sqlID)
+		return nil, fmt.Errorf("The session was closed, sqlID=%s", sql)
 	}
 
-	si, err := getSQLMgrInstance().getSQL(sqlID)
+	result, err := NewBean(resultType)
+	if err != nil {
+		return nil, fmt.Errorf("NewBean fail, err=%s, resultType=%s, sqlID=%s", err, resultType, sql)
+	}
+
+	sql, err = preparedDyncSQL(sql)
 	if err != nil {
 		return nil, err
 	}
 
-	if si.class != selectClass {
-		return nil, fmt.Errorf("Sql class is not selectClass, but %d, sqlID=%s", si.class, sqlID)
+	if containNamedArgs(sql) && len(args) > 0 {
+		var err error
+		sql, args, err = preparedNamedArgs(sql, args[0])
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	if si.resultType == "" {
-		return nil, fmt.Errorf("The result type is empty, sqlID=%s", sqlID)
+	rows, err := s.db.Query(sql, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	columns, err := rows.Columns()
+	if err != nil {
+		return nil, err
 	}
 
-	return s.selectList(si.sql, si.resultType, args...)
+	len := len(columns)
+	dest := make([]interface{}, len)
+	for i := 0; i < len; i++ {
+		field := result.Elem().FieldByName(columns[i])
+		dest[i] = field.Addr().Interface()
+	}
+
+	results := make([]interface{}, 0)
+
+	for rows.Next() {
+		err := rows.Scan(dest...)
+		if err != nil {
+			return nil, err
+		}
+
+		results = append(results, result.Elem().Interface())
+	}
+
+	return results, nil
 }
 
 // Execute write database
-func (s SQLSession) Execute(sqlID string, args ...interface{}) (sql.Result, error) {
+func (s sqlSession) execute(sql string, args ...interface{}) (sql.Result, error) {
 
 	if s.db == nil {
-		return nil, fmt.Errorf("The session was closed, sqlID=%s", sqlID)
+		return nil, fmt.Errorf("The session was closed, sqlID=%s", sql)
 	}
 
-	si, err := getSQLMgrInstance().getSQL(sqlID)
+	sql, err := preparedDyncSQL(sql)
 	if err != nil {
 		return nil, err
 	}
 
-	if si.class != insertClass && si.class != updateClass && si.class != deleteClass && si.class != anyClass {
-		return nil, fmt.Errorf("Sql class is not insertClass, updateClass, deleteClass, but %d, sqlID=%s", si.class, sqlID)
+	if containNamedArgs(sql) && len(args) > 0 {
+		var err error
+		sql, args, err = preparedNamedArgs(sql, args[0])
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return s.execute(si.sql, args...)
+	return s.db.Exec(sql, args...)
 }
 
 // BulkInsert means bulk insert data
 // sql syntax: insert into t(a1, a2, a3) values (?, ?, ?),(?, ?, ?)...
-func (s SQLSession) BulkInsert(sqlID string, rows []interface{}) (sql.Result, error) {
+func (s sqlSession) bulkInsert(sql string, rows []interface{}) (sql.Result, error) {
 	if s.db == nil {
-		return nil, fmt.Errorf("The session was closed, sqlID=%s", sqlID)
+		return nil, fmt.Errorf("The session was closed, sqlID=%s", sql)
 	}
 
 	if rows == nil || len(rows) == 0 {
 		return nil, fmt.Errorf("%s", "The rows is nil or len is zero.")
 	}
 
-	si, err := getSQLMgrInstance().getSQL(sqlID)
+	if containNamedArgs(sql) {
+		var err error
+		sql, rows, err = preparedBulkNamedArgs(sql, rows)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	ss, err := cutInsertSQL(sql)
 	if err != nil {
 		return nil, err
 	}
 
-	if si.class != insertClass {
-		return nil, fmt.Errorf("Sql class is not insertClass, but %d, sqlID=%s", si.class, sqlID)
+	sqlStr := ss[0]
+	args := make([]interface{}, 0)
+	for _, row := range rows {
+		sqlStr += ss[1] + ","
+		vals, ok := row.([]interface{})
+		if ok {
+			args = append(args, vals...)
+		}
 	}
 
-	return s.bulkInsert(si.sql, rows)
+	// trim the last ,
+	sqlStr = sqlStr[0 : len(sqlStr)-1]
+
+	stmt, err := s.db.Prepare(sqlStr)
+	if err != nil {
+		return nil, fmt.Errorf("Prepare sql fail, err=%v, sql=%s", err, sqlStr)
+	}
+	defer stmt.Close()
+
+	return stmt.Exec(args...)
 }
 
 // Close free a database connection
-func (s SQLSession) Close() {
-	s.close()
+func (s sqlSession) close() {
+	if s.db != nil {
+		s.db = nil
+	}
 }
 
 // OpenSession Open a sql session
-func OpenSession(dbIDs ...string) (s *SQLSession, err error) {
-	ss, err := openSession(dbIDs...)
-	if err != nil {
-		return nil, err
+func openSession(dbIDs ...string) (s *sqlSession, err error) {
+	dbmgr := getDBMgrInstance()
+	if dbIDs == nil {
+		defaultID := dbmgr.defaultID
+		if db, ok := dbmgr.getDB(defaultID); ok {
+			s = &sqlSession{
+				db: db,
+			}
+		} else {
+			err = fmt.Errorf("Not found default DB, defaultID=%s", defaultID)
+		}
+		return
 	}
 
-	return &SQLSession{
-		sqlSession: ss,
-	}, nil
+	for _, dbID := range dbIDs {
+		if db, ok := dbmgr.getDB(dbID); ok {
+			s = &sqlSession{
+				db: db,
+			}
+			return
+		}
+	}
+
+	err = fmt.Errorf("Not found any DB instance, dbIDs=%p", dbIDs)
+
+	return
 }
