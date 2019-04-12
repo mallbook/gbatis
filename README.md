@@ -130,6 +130,17 @@ func TestSelectRow_2(t *testing.T) {
 
 ```
 
+## XML Escape Character
+|Character|Escape Character|
+|:--|:--|
+|&|&amp;|
+|<|&lt;|
+|<=|&le;|
+|>|&gt;|
+|>=|&ge;|
+|"|&quot;|
+|'|&apos;|
+
 ## TODO
 - [ ] Add init() in config.go
 - [ ] Support sql template
