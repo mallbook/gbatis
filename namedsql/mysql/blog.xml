@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<mapper namespace="/mapper/blog">
+<select id="findActiveBlogLike" resultType="Blog">
+  SELECT * FROM BLOG
+  <where>
+	  ${- if .state}
+		state = #{.state}
+	  ${- end}
+	  ${- if .title}
+		AND title like #{.title}
+	  ${- end}
+	  ${- and .author .author.name}
+		AND author_name like #{.author.name}
+	  ${- end}
+  </where>
+</select>
+<update id="updateAuthorIfNecessary">
+  update Author
+    <set>
+      ${- if .username}username=#{.username},${- end}
+      ${- if .password}password=#{.password},$(- end}
+      ${- if .email}email=#{.email},${- end}
+      ${- if .bio}bio=#{.bio}${- end}
+    </set>
+  where id=#{id}
+</update>
+</mapper>
