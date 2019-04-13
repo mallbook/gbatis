@@ -15,6 +15,11 @@ func (s sqlSession) selectRow(sql string, args ...interface{}) (*sql.Row, error)
 		return nil, fmt.Errorf("The session was closed, sqlID=%s", sql)
 	}
 
+	sql, err := preparedDyncSQL(sql)
+	if err != nil {
+		return nil, err
+	}
+
 	if containNamedArgs(sql) && len(args) > 0 {
 		var err error
 		sql, args, err = preparedNamedArgs(sql, args[0])
@@ -49,6 +54,11 @@ func (s sqlSession) selectList(sql, resultType string, args ...interface{}) ([]i
 	result, err := NewBean(resultType)
 	if err != nil {
 		return nil, fmt.Errorf("NewBean fail, err=%s, resultType=%s, sqlID=%s", err, resultType, sql)
+	}
+
+	sql, err = preparedDyncSQL(sql)
+	if err != nil {
+		return nil, err
 	}
 
 	if containNamedArgs(sql) && len(args) > 0 {
@@ -96,6 +106,11 @@ func (s sqlSession) execute(sql string, args ...interface{}) (sql.Result, error)
 
 	if s.db == nil {
 		return nil, fmt.Errorf("The session was closed, sqlID=%s", sql)
+	}
+
+	sql, err := preparedDyncSQL(sql)
+	if err != nil {
+		return nil, err
 	}
 
 	if containNamedArgs(sql) && len(args) > 0 {
