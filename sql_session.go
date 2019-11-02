@@ -82,9 +82,20 @@ func (s sqlSession) selectList(sql, resultType string, args ...interface{}) ([]i
 
 	len := len(columns)
 	dest := make([]interface{}, len)
+	typ := result.Elem().Type()
+	numField := typ.NumField()
 	for i := 0; i < len; i++ {
-		field := result.Elem().FieldByName(columns[i])
-		dest[i] = field.Addr().Interface()
+		j := 0
+		for ; j < numField; j++ {
+			f := typ.Field(j)
+			if f.Tag.Get("json") == columns[i] {
+				break
+			}
+		}
+		if j < numField {
+			field := result.Elem().Field(j)
+			dest[i] = field.Addr().Interface()
+		}
 	}
 
 	results := make([]interface{}, 0)
