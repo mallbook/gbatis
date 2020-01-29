@@ -3,6 +3,8 @@ package gbatis
 import (
 	"database/sql"
 	"fmt"
+
+	"github.com/mallbook/gbatis/bean"
 )
 
 type sqlSession struct {
@@ -51,7 +53,7 @@ func (s sqlSession) selectList(sql, resultType string, args ...interface{}) ([]i
 		return nil, fmt.Errorf("The session was closed, sqlID=%s", sql)
 	}
 
-	result, err := NewBean(resultType)
+	result, err := bean.New(resultType)
 	if err != nil {
 		return nil, fmt.Errorf("NewBean fail, err=%s, resultType=%s, sqlID=%s", err, resultType, sql)
 	}

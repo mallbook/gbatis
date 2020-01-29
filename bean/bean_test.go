@@ -1,4 +1,4 @@
-package gbatis
+package bean
 
 import (
 	"testing"
@@ -17,7 +17,7 @@ func newStudent() *student {
 }
 
 func init() {
-	RegisterBean("student", newStudent)
+	Register("student", newStudent)
 }
 
 func TestBean(t *testing.T) { TestingT(t) }

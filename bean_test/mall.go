@@ -1,9 +1,9 @@
-package bean
+package bean1
 
 import (
 	"encoding/json"
 
-	"github.com/mallbook/gbatis"
+	"github.com/mallbook/gbatis/bean"
 )
 
 // Mall model mall
@@ -72,7 +72,7 @@ func NewBrand() *Brand {
 }
 
 func init() {
-	gbatis.RegisterBean("bean.Mall", NewMall)
-	gbatis.RegisterBean("bean.Shop", NewShop)
-	gbatis.RegisterBean("bean.Brand", NewBrand)
+	bean.Register("bean.Mall", NewMall)
+	bean.Register("bean.Shop", NewShop)
+	bean.Register("bean.Brand", NewBrand)
 }

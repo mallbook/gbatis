@@ -1,4 +1,4 @@
-package gbatis
+package bean
 
 import (
 	"fmt"
@@ -7,15 +7,15 @@ import (
 	"sync"
 )
 
-type newBean func() interface{}
+// type newBean func() interface{}
 
-// RegisterBean register a bean
-func RegisterBean(name string, f interface{}) {
+// Register register a bean
+func Register(name string, f interface{}) {
 	getBeanFactoryInstance().registerBean(name, f)
 }
 
-// NewBean new a bean object
-func NewBean(name string) (reflect.Value, error) {
+// New new a bean object by name
+func New(name string) (reflect.Value, error) {
 	return getBeanFactoryInstance().newBean(name)
 }
 
