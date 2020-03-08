@@ -7,8 +7,6 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
-
-	"github.com/mallbook/commandline"
 )
 
 type sqlClass int8
