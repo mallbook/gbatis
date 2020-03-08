@@ -167,6 +167,7 @@ func loadNamedSQL(namedPath string) error {
 }
 
 func init() {
-	p := commandline.PrefixPath()
-	loadNamedSQL(p + "/namedsql")
+	// TODO: temp for test
+	// p := commandline.PrefixPath()
+	// loadNamedSQL(p + "/namedsql")
 }

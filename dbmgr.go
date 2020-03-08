@@ -115,6 +115,7 @@ func openDB(confFile string) (err error) {
 }
 
 func init() {
+	// TODO: temp for test
 	/*p := commandline.PrefixPath()
 	err := openDB(p + "/etc/conf/gbatis.xml")
 	if err != nil {
