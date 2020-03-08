@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"log"
 	"sync"
-
-	"github.com/mallbook/commandline"
 )
 
 var (
@@ -117,11 +115,11 @@ func openDB(confFile string) (err error) {
 }
 
 func init() {
-	p := commandline.PrefixPath()
+	/*p := commandline.PrefixPath()
 	err := openDB(p + "/etc/conf/gbatis.xml")
 	if err != nil {
 		log.Println(err)
 		return
-	}
+	}*/
 	// log.Println("Open database success.")
 }
